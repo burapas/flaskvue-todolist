@@ -5,6 +5,6 @@ setup(
     name="tiny_flask", 
     description="",
     packages=find_packages(),
-    install_requires=["flask", "peewee"],
+    install_requires=["flask", "peewee", "flask-cors"],
     tests_require=["pytest"],
 )

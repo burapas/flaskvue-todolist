@@ -1,0 +1,37 @@
+
+{% raw %}
+<title>Tiny Flask</title>
+<script src="https://unpkg.com/vue/dist/vue.js"></script>
+<script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://www.unpkg.com/bulma"></link>
+
+
+<div id="app">
+    <h2>Todos</h2>
+    <todo v-for="todo in todos" v-bind:key="todo.id" v-bind:task=todo.task></todo>
+</div>
+
+<script>
+
+const API_URL = 'http://127.0.0.1:5000/api'
+
+Vue.component('todo', {
+    props: ['task'],
+    template: `<h3>{{ task }}</h3>`
+})
+
+const app = new Vue({
+  el: '#app',
+  data () {
+      return {
+          todos: null
+      }
+  },
+  mounted () {
+    axios.get(`${API_URL}/todos/`)
+    .then((response) => (this.todos = response.data.todos))
+  }
+})
+</script>
+{% endraw %}

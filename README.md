@@ -7,11 +7,11 @@ Frontend: Vuejs and Axios
 
 ## Install
 
-# Production
+### Production
 
 `$ pip install -r requirements.txt`
 
-# Development
+### Development
 
 `$ pip install -e .`
 

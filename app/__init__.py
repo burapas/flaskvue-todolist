@@ -1,7 +1,9 @@
 from flask import Flask
+from flask_cors import CORS
+from playhouse.flask_utils import FlaskDB
 
 from config import config
-from playhouse.flask_utils import FlaskDB
+
 
 db = FlaskDB()
 
@@ -10,6 +12,8 @@ def create_app(config_name="development"):
     app = Flask(__name__)
 
     app.config.from_object(config[config_name])
+    
+    cors = CORS(app, resources={f"/api/*": {"origins": "*"}})
     
     db.init_app(app) 
 
