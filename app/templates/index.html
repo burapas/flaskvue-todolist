@@ -8,29 +8,62 @@
 
 
 <div id="app">
-    <h2>Todos</h2>
-    <todo v-for="todo in todos" v-bind:key="todo.id" v-bind:task=todo.task></todo>
+  <section class="section">
+    <div class="container">
+        <h1 class="title">Todos</h1>
+        <todo v-for="todo in todos" v-bind:key="todo.id" v-bind:task=todo.task></todo>
+        <input @keyup.enter=postTodo(newTodo) v-model="newTodo" placeholder="new todo here">
+    </div>
+  </section>
 </div>
 
 <script>
 
 const API_URL = 'http://127.0.0.1:5000/api'
 
+
 Vue.component('todo', {
     props: ['task'],
-    template: `<h3>{{ task }}</h3>`
+    template: `<p class="subtitle">{{ task }}</p>`
 })
+
 
 const app = new Vue({
   el: '#app',
   data () {
       return {
-          todos: null
+          todos: null,
+          newTodo: null,
       }
   },
+  methods: {
+    getTodos: function getTodos () {
+        axios.get(`${API_URL}/todos/`)
+        .then((response) => (this.todos = response.data.todos))
+        .catch(error => console.log(error))
+    },
+    postTodo: function (todoTask) {
+        axios.post(`${API_URL}/todos/`, {task: todoTask})
+        .then(response => this.todos = [...this.todos, response.data])
+        .catch(error => console.log(error))
+    },
+    putTodo: function (id, todoTask) {
+        if (id > 0) {
+            axios.put(`${API_URL}/todos/${id}`, {task: todoTask})
+            .then(response => this.todos.splice(id - 1, 1, response.data))
+            .catch(error => console.log(error))
+        } 
+    },
+    deleteTodo: function (id) {
+        if (id > 0) {
+            axios.delete(`${API_URL}/todos/${id}`)
+            .then(response => this.todos = this.todos.filter(todo => todo.id !== id))
+            .catch(error => console.log(error))
+        }
+    }
+  },
   mounted () {
-    axios.get(`${API_URL}/todos/`)
-    .then((response) => (this.todos = response.data.todos))
+    this.getTodos()
   }
 })
 </script>

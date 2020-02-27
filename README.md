@@ -14,6 +14,10 @@ Frontend: Vuejs and Axios
 ### Development
 
 `$ pip install -e .`
+`$ FLASK_APP=run.py`
+`$ FLASK_ENV=development`
+`$ flask initdb`
+`$ flask run`
 
 ## Testing
 

@@ -12,7 +12,6 @@ def initdb():
     click.echo("Initializing database...")
     with db.database:
         db.database.create_tables([Todo], fail_silently=True)
-        Todo.create(task="cook breakfast")
 
 @app.cli.command("tests")
 def tests():
