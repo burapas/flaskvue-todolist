@@ -1,11 +1,11 @@
-# Tiny Flask
+# Flaskvue-Todolist
 
 A template SPA built with Vuejs and Flask.
 
-Backend: Flask, Peewee, Sqlite (tests: Pytest)
+Backend: Flask, Peewee, Sqlite (Pytest)
+
 Frontend: Vuejs, Axios
 
-## Install
 
 ### Production
 
