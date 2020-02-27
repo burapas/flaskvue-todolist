@@ -2,26 +2,38 @@
 
 A template SPA built with Vuejs and Flask.
 
-Backend: Flask, Peewee, Sqlite, and Pytest
-Frontend: Vuejs and Axios
+Backend: Flask, Peewee, Sqlite (tests: Pytest)
+Frontend: Vuejs, Axios
 
 ## Install
 
 ### Production
 
-`$ pip install -r requirements.txt`
+```
+pip install -r requirements.txt
+FLASK_APP=run.py
+FLASK_ENV=production
+flask initdb
+flask run
+```
 
 ### Development
 
-`$ pip install -e .`
-`$ FLASK_APP=run.py`
-`$ FLASK_ENV=development`
-`$ flask initdb`
-`$ flask run`
+```
+pip install -e .
+FLASK_APP=run.py
+FLASK_ENV=development
+flask initdb
+flask run
+```
 
 ## Testing
 
-`$ pytest`
+```
+FLASK_APP=run.py
+FLASK_ENV=production
+pytest
+```
 
 ## TODO
 
