@@ -1,20 +1,44 @@
 
 {% raw %}
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
 <title>Todolist</title>
 <script src="https://unpkg.com/vue/dist/vue.js"></script>
 <script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
 <link rel="stylesheet" type="text/css" href="https://www.unpkg.com/bulma"></link>
 
 
 <div id="app">
-  <section class="section">
-    <div class="container">
-        <h1 class="title">Todos</h1>
-        <todo v-for="todo in todos" v-bind:key="todo.id" v-bind:task=todo.task></todo>
-        <input @keyup.enter=postTodo(newTodo) v-model="newTodo" placeholder="new todo here">
+
+
+  <section class="hero is-primary">
+    <div class="hero-body">
+      <h1 class="title">Todos</h1>
     </div>
   </section>
+
+
+  <div class="todos card">
+
+    <div class="card-content">
+      <todo 
+        class="todo" 
+        v-for="todo in todos" :key="todo.id" :todo="todo"
+        @update-todo="putTodo" @delete-todo="deleteTodo"
+        @keyup.up="moveCursor" @keyup.down="moveCursor"
+      />
+    </div>
+
+    <div class="card-footer">
+      <new-todo @create-todo="postTodo"></new-todo>
+    </div>
+
+  </div>
+
 </div>
 
 <script>
@@ -22,48 +46,129 @@
 const API_URL = 'http://127.0.0.1:5000/api'
 
 
-Vue.component('todo', {
-    props: ['task'],
-    template: `<p class="subtitle">{{ task }}</p>`
+Vue.component("todo", {
+  props: ['todo'],
+  data () {
+    return {
+      updatedTask: null,
+      editing: false,
+      active: false,
+    }
+  },
+  updated () {
+    this.$on('move-cursor', (e) => {
+      console.log('my event received', e)
+    })
+  },
+  computed: {
+    styles: function() {
+      if (this.active) {
+        return {'background-color': 'blue'}
+      }
+    }
+  },
+  methods: {
+    enableEditing: function () {
+      this.updatedTask = this.todo.task;
+      this.editing = true;
+    },
+    disableEditing: function () {
+      this.updatedTask = null;
+      this.editing = false;
+    },
+    commitEdit: function () {
+      this.$emit("update-todo", {"id": this.todo.id, "task": this.updatedTask});
+      this.disableEditing();
+    },
+    emitDelete: function () {
+      this.$emit("delete-todo", {"id": this.todo.id, "task": this.todo.task});
+    },
+  },
+  template: `
+    <div v-if="!editing">
+      <span class="text" @click="enableEditing">{{ todo.task }}</span>
+      <button @click="emitDelete">
+        <i class="fa fa-minus" aria-hidden="true"></i>
+      </button>
+    </div>
+    <div v-else-if="editing">
+      <input v-model="updatedTask"
+        @keyup.enter="commitEdit"
+        @keyup.esc="disableEditing"
+        />
+    </div>`,
 })
 
+Vue.component("new-todo", {
+  data () {
+    return {
+      task: null,
+    }
+  },
+  methods: {
+    createTodo: function () {
+      this.$emit("create-todo", {"task": this.task});
+      this.task = null;
+    }
+  },
+  template: `
+    <input @keyup.enter=createTodo(task) v-model="task"" placeholder="what needs to be done?">
+  `
+})
 
 const app = new Vue({
   el: '#app',
   data () {
-      return {
-          todos: null,
-          newTodo: null,
-      }
+    return {
+      todos: null,
+      currentTodo: 1,
+    }
   },
   methods: {
-    getTodos: function getTodos () {
-        axios.get(`${API_URL}/todos/`)
-        .then((response) => (this.todos = response.data.todos))
-        .catch(error => console.log(error))
+    getTodos: function getTodos() {
+      axios.get(`${API_URL}/todos/`)
+      .then((response) => (this.todos = response.data.todos))
+      .catch(error => console.log(error))
     },
-    postTodo: function (todoTask) {
-        axios.post(`${API_URL}/todos/`, {task: todoTask})
-        .then(response => this.todos = [...this.todos, response.data])
-        .catch(error => console.log(error))
+    getTodo: function getTodo(todo) {
+      axios.get(`${API_URL}/todo/${todo.id}`)
+      .then((response) => response.data)
+      .catch(error => console.log(error))
     },
-    putTodo: function (id, todoTask) {
-        if (id > 0) {
-            axios.put(`${API_URL}/todos/${id}`, {task: todoTask})
-            .then(response => this.todos.splice(id - 1, 1, response.data))
-            .catch(error => console.log(error))
-        } 
+    postTodo: function postTodo(todo) {
+      axios.post(`${API_URL}/todos/`, {task: todo.task})
+      .then(response => this.todos.push(response.data))
+      .catch(error => console.log(error))
     },
-    deleteTodo: function (id) {
-        if (id > 0) {
-            axios.delete(`${API_URL}/todos/${id}`)
-            .then(response => this.todos = this.todos.filter(todo => todo.id !== id))
-            .catch(error => console.log(error))
-        }
+    putTodo: function putTodo(todo) {
+      axios.put(`${API_URL}/todos/${todo.id}`, {task: todo.task})
+      .then(response => {
+        let instance = this.todos.find(instance => instance.id === todo.id);
+        Object.assign(instance, {task: todo.task});
+      })
+      .catch(error => console.log(error))
+    },
+    deleteTodo: function deleteTodo(todo) {
+      axios.delete(`${API_URL}/todos/${todo.id}`)
+      .then(response => this.todos = this.todos.filter(instance => instance.id !== todo.id))
+      .catch(error => console.log(error))
+    },
+    moveCursor: function moveCursor(direction) {
+      console.log("move cursor");
+      if (direction == "up" && this.currentTodo > 1) {
+        // this.currentTodo--
+        console.log(this.currentTodo--)
+        this.$emit('move-cursor', this.currentTodo--)
+      } else if (direction == "down" && this.currentTodo < this.todos.length) {
+        // this.currentTodo++
+        console.log(this.currentTodo++)
+        this.$emit('move-cursor', this.currentTodo++)
+      }
     }
   },
   mounted () {
-    this.getTodos()
+    this.getTodos();
+    // document.addEventListener("keyup", this.nextItem);
   }
 })
 </script>
